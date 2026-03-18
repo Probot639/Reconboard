@@ -20,12 +20,12 @@ Dashboard: `http://localhost:8443`
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────┐
 │                   Browser UI                    │
 │              http://localhost:8443              │
-└────────────────────┬────────────────────────────┘
+└────────────────────┬─────────────────────────────────┘
                      │
-┌────────────────────▼────────────────────────────┐
+┌────────────────────▼─────────────────────────────────┐
 │              Reconboard Server                  │
 │         Flask API + Orchestrator                │
 │                                                 │
@@ -33,20 +33,20 @@ Dashboard: `http://localhost:8443`
 │  • Scan profile generation                      │
 │  • Result parsing & integration                 │
 │  • Can also execute scans locally               │
-└────────────────────┬────────────────────────────┘
+└────────────────────┬─────────────────────────────────┘
                      │
-┌────────────────────▼────────────────────────────┐
+┌────────────────────▼─────────────────────────────────┐
 │                Redis Queue                      │
 │           Job dispatch & coordination           │
 │                                                 │
 │  • redrecon:jobs      (pending scan queue)      │
 │  • redrecon:result:*  (completed results)       │
 │  • redrecon:workers   (heartbeat registry)      │
-└────────────────────┬────────────────────────────┘
+└────────────────────┬─────────────────────────────────┘
                      │
          ┌───────────┼───────────┐
          ▼           ▼           ▼
-┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+┌───────────────┐ ┌────────────────┐ ┌───────────────┐
 │  Worker #1   │ │  Worker #2   │ │  Worker #N   │
 │  (Kali box)  │ │  (Kali box)  │ │  (Kali box)  │
 │              │ │              │ │              │
@@ -54,7 +54,7 @@ Dashboard: `http://localhost:8443`
 │ Runs scans   │ │ Runs scans   │ │ Runs scans   │
 │ Pushes       │ │ Pushes       │ │ Pushes       │
 │ results back │ │ results back │ │ results back │
-└──────────────┘ └──────────────┘ └──────────────┘
+└───────────────┘ └────────────────┘ └───────────────┘
 ```
 
 ## What's In The Container
