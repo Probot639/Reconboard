@@ -1,7 +1,0 @@
-# Nmap 7.98 scan initiated Wed Mar 11 20:44:51 2026 as: /usr/lib/nmap/nmap -sU --top-ports 50 -T4 -oN /opt/redrecon/data/scans/osint-breach.me_udp.txt -oX /opt/redrecon/data/scans/osint-breach.me_udp.xml 178.156.211.211
-Nmap scan report for static.211.211.156.178.clients.your-server.de (178.156.211.211)
-Host is up (0.018s latency).
-All 50 scanned ports on static.211.211.156.178.clients.your-server.de (178.156.211.211) are in ignored states.
-Not shown: 50 open|filtered udp ports (no-response)
-
-# Nmap done at Wed Mar 11 20:44:52 2026 -- 1 IP address (1 host up) scanned in 1.62 seconds

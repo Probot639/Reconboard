@@ -1,8 +1,0 @@
-;; communications error to 178.156.211.211#53: timed out
-;; communications error to 178.156.211.211#53: timed out
-;; communications error to 178.156.211.211#53: timed out
-
-; <<>> DiG 9.20.20-1-Debian <<>> axfr @178.156.211.211
-; (1 server found)
-;; global options: +cmd
-;; no servers could be reached
