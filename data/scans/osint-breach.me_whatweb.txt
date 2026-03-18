@@ -1,0 +1,2 @@
+[1m[34mhttp://178.156.211.211[0m [308 Permanent Redirect] [1mCountry[0m[[0m[22mROMANIA[0m][[1m[31mRO[0m], [1mHTTPServer[0m[[1m[36mCaddy[0m], [1mIP[0m[[0m[22m178.156.211.211[0m], [1mRedirectLocation[0m[[0m[22mhttps://178.156.211.211/[0m]
+[1m[31mERROR Opening: https://178.156.211.211/ - SSL_connect returned=1 errno=0 peeraddr=178.156.211.211:443 state=error: tlsv1 alert internal error (SSL alert number 80)[0m

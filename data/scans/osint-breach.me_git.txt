@@ -1,0 +1,6 @@
+HTTP/1.1 308 Permanent Redirect
+Connection: close
+Location: https://178.156.211.211/.git/HEAD
+Server: Caddy
+Date: Wed, 11 Mar 2026 20:47:06 GMT
+

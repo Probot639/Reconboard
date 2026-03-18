@@ -1,0 +1,22 @@
+# Nmap 7.98 scan initiated Wed Mar 11 20:44:49 2026 as: /usr/lib/nmap/nmap -sS -sV -sC -O -T4 -oN /opt/redrecon/data/scans/osint-breach.me_quick.txt -oX /opt/redrecon/data/scans/osint-breach.me_quick.xml 178.156.211.211
+Nmap scan report for static.211.211.156.178.clients.your-server.de (178.156.211.211)
+Host is up (0.018s latency).
+Not shown: 996 filtered tcp ports (no-response)
+PORT     STATE  SERVICE   VERSION
+22/tcp   open   ssh       OpenSSH 9.6p1 Ubuntu 3ubuntu13.14 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 71:7d:b8:87:cd:5a:1a:8a:75:e0:6d:15:89:74:d8:f2 (ECDSA)
+|_  256 ea:0f:41:9f:cc:b4:7e:a4:c5:35:0f:b1:bd:27:62:58 (ED25519)
+80/tcp   open   http      Caddy httpd
+|_http-title: Site doesn't have a title.
+|_http-server-header: Caddy
+443/tcp  open   ssl/https
+|_http-title: Site doesn't have a title.
+|_ssl-date: TLS randomness does not represent time
+5000/tcp closed upnp
+Aggressive OS guesses: Linux 5.0 - 5.14 (98%), MikroTik RouterOS 7.2 - 7.5 (Linux 5.6.3) (97%), Linux 4.15 - 5.19 (94%), Linux 2.6.32 - 3.13 (93%), OpenWrt 21.02 (Linux 5.4) (93%), Linux 2.6.39 (93%), Linux 5.1 - 5.15 (92%), Linux 6.0 (92%), OpenWrt 22.03 (Linux 5.10) (92%), Linux 2.6.22 - 2.6.36 (91%)
+No exact OS matches for host (test conditions non-ideal).
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Wed Mar 11 20:45:10 2026 -- 1 IP address (1 host up) scanned in 20.92 seconds

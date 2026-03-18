@@ -1,0 +1,120 @@
+##################################################################
+# Reconboard v5 — Docker Compose (Distributed)
+##################################################################
+#
+# Usage:
+#   docker compose up -d                    # Start all services
+#   docker compose up -d --scale worker=5   # Start with 5 workers
+#   docker compose logs -f                  # Follow logs
+#   docker compose down                     # Stop everything
+#
+# Scaling workers on the fly:
+#   docker compose up -d --scale worker=10  # Scale to 10 workers
+#   docker compose up -d --scale worker=1   # Scale back down
+#
+# Access: http://localhost:8443
+##################################################################
+
+services:
+  # ─── Redis: Job Queue & Worker Coordination ───
+  redis:
+    image: redis:7-alpine
+    container_name: reconboard-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  # ─── Main Server: Web UI + API + Orchestrator ───
+  redrecon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reconboard
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "${REDRECON_PORT:-8443}:8443"
+    volumes:
+      - ./data:/opt/redrecon/data
+    network_mode: "host"
+    privileged: true
+    environment:
+      - REDRECON_PORT=${REDRECON_PORT:-8443}
+      - REDIS_URL=redis://127.0.0.1:6379/0
+      - WORKER_MODE=${WORKER_MODE:-distributed}
+      - MAX_CONCURRENT_SCANS=${MAX_CONCURRENT_SCANS:-5}
+      - SCAN_TIMEOUT=${SCAN_TIMEOUT:-1800}
+      - REDRECON_API_KEY=${REDRECON_API_KEY:-}
+      - REDRECON_PASSWORD=${REDRECON_PASSWORD:-redpass}
+      # SECRET_KEY: set to a fixed value if you want sessions to survive container restarts
+      # If unset, a random key is generated each startup (sessions reset on restart)
+      # - SECRET_KEY=${SECRET_KEY:-mysecretkey}
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ─── Worker: Scalable Scan Execution Nodes ───
+  # Scale with: docker compose up -d --scale worker=N
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./data:/opt/redrecon/data
+    network_mode: "host"
+    privileged: true
+    environment:
+      - REDIS_URL=redis://127.0.0.1:6379/0
+      - CONCURRENCY=${WORKER_CONCURRENCY:-3}
+      - SCAN_TIMEOUT=${SCAN_TIMEOUT:-1800}
+      - SCAN_OUTPUT_DIR=/opt/redrecon/data/scans
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+volumes:
+  redis_data:

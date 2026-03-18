@@ -1,0 +1,116 @@
+FROM kalilinux/kali-rolling
+
+LABEL maintainer="Red Team"
+LABEL description="Reconboard v5 — Worker Node"
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+
+# ─── Base system ───
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    curl \
+    wget \
+    git \
+    ca-certificates \
+    dnsutils \
+    net-tools \
+    iputils-ping \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Core scanning tools ───
+RUN apt-get update && apt-get install -y \
+    nmap \
+    masscan \
+    enum4linux \
+    smbclient \
+    smbmap \
+    netexec \
+    gobuster \
+    dirb \
+    nikto \
+    wpscan \
+    whatweb \
+    dnsrecon \
+    dnsenum \
+    hydra \
+    redis-tools \
+    samba-common-bin \
+    ldap-utils \
+    netcat-traditional \
+    snmp \
+    snmp-mibs-downloader \
+    medusa \
+    pipx \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Advanced tools ───
+RUN apt-get update && apt-get install -y \
+    sqlmap \
+    onesixtyone \
+    smtp-user-enum \
+    sslscan \
+    sslyze \
+    testssl.sh \
+    nbtscan \
+    fping \
+    wafw00f \
+    swaks \
+    whois \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Impacket ───
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-impacket \
+    impacket-scripts \
+    && rm -rf /var/lib/apt/lists/* \
+    || pip3 install impacket
+
+# ─── Go tools ───
+RUN apt-get update && apt-get install -y --no-install-recommends golang-go \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV GOPATH=/root/go
+ENV PATH="${GOPATH}/bin:/usr/local/go/bin:${PATH}"
+
+RUN go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest 2>/dev/null || true && \
+    go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest 2>/dev/null || true && \
+    go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest 2>/dev/null || true && \
+    go install -v github.com/projectdiscovery/naabu/v2/cmd/naabu@latest 2>/dev/null || true && \
+    cp ${GOPATH}/bin/* /usr/local/bin/ 2>/dev/null || true && \
+    rm -rf ${GOPATH}/pkg ${GOPATH}/src /root/.cache/go-build
+
+RUN nuclei -update-templates 2>/dev/null || true
+
+# ─── Feroxbuster ───
+RUN apt-get update && apt-get install -y feroxbuster \
+    && rm -rf /var/lib/apt/lists/* \
+    || (curl -sL https://raw.githubusercontent.com/epi052/feroxbuster/main/install-nix.sh | bash -s /usr/local/bin)
+
+# ─── ExploitDB ───
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    exploitdb \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─── Wordlists ───
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    seclists \
+    wordlists \
+    && rm -rf /var/lib/apt/lists/* \
+    && [ -f /usr/share/wordlists/rockyou.txt.gz ] && gunzip /usr/share/wordlists/rockyou.txt.gz || true
+
+# ─── Python deps ───
+RUN pip3 install redis
+
+WORKDIR /opt/redrecon
+COPY worker.py .
+RUN mkdir -p data/scans
+
+COPY worker-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

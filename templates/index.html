@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reconboard v5</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117; --bg2: #161b22; --bg3: #21262d; --border: #30363d;
+  --text: #e6edf3; --muted: #8892a4; --dim: #555;
+  --red: #ff2b5e; --orange: #ff6b35; --yellow: #ffc045; --teal: #4ecdc4; --blue: #7b8cde; --purple: #b583e0;
+  --font: 'JetBrains Mono', 'Fira Code', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 13px; min-height: 100vh; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+.header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--red); box-shadow: 0 0 10px #ff2b5e88; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 10px #ff2b5e88; } 50% { box-shadow: 0 0 20px #ff2b5ecc; } }
+.logo-text { font-size: 16px; font-weight: 700; color: var(--red); letter-spacing: 1.5px; }
+.logo-ver { font-size: 10px; color: var(--muted); padding: 2px 8px; background: var(--bg3); border-radius: 4px; }
+.stats { display: flex; gap: 12px; font-size: 11px; color: var(--muted); align-items: center; flex-wrap: wrap; }
+.stats span b { color: var(--text); }
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { padding: 6px 16px; border: none; border-radius: 4px; font-family: var(--font); font-size: 12px; cursor: pointer; transition: all 0.15s; }
+.btn-primary { background: var(--teal); color: var(--bg); font-weight: 600; }
+.btn-primary:hover { background: #5ee0d6; }
+.btn-secondary { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
+.btn-secondary:hover { color: var(--text); border-color: var(--muted); }
+.btn-danger { background: #ff2b5e22; color: var(--red); border: 1px solid #ff2b5e44; }
+.btn-danger:hover { background: #ff2b5e44; }
+.btn-sm { padding: 3px 10px; font-size: 11px; }
+.btn-run { background: #4ecdc422; color: var(--teal); border: 1px solid #4ecdc444; }
+.btn-run:hover { background: #4ecdc444; }
+.btn-stop { background: #ff2b5e22; color: var(--red); border: 1px solid #ff2b5e44; }
+.btn-purple { background: #b583e022; color: var(--purple); border: 1px solid #b583e044; }
+.btn-purple:hover { background: #b583e044; }
+.tabs { background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; padding-left: 8px; overflow-x: auto; }
+.tab { padding: 8px 16px; border: none; cursor: pointer; font-size: 12px; font-family: var(--font); background: transparent; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; }
+.tab.active { background: rgba(78,205,196,0.12); color: var(--teal); border-bottom-color: var(--teal); }
+.tab-count { margin-left: 5px; background: var(--bg3); color: var(--muted); border-radius: 8px; padding: 1px 6px; font-size: 10px; }
+.tab.active .tab-count { background: var(--teal); color: var(--bg); }
+.layout { display: flex; height: calc(100vh - 88px); overflow: hidden; }
+.main { flex: 1; overflow-y: auto; padding: 14px; }
+.detail-panel { width: 340px; border-left: 1px solid var(--border); background: var(--bg2); overflow-y: auto; padding: 14px; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; margin-bottom: 6px; cursor: pointer; transition: all 0.15s; }
+.card:hover { border-color: var(--muted); }
+.card.selected { border-color: var(--teal); background: #1c2333; }
+.card-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-family: var(--font); margin-right: 4px; margin-bottom: 2px; }
+.badge-red { background: #ff2b5e22; color: var(--red); border: 1px solid #ff2b5e44; }
+.badge-orange { background: #ff6b3522; color: var(--orange); border: 1px solid #ff6b3544; }
+.badge-yellow { background: #ffc04522; color: var(--yellow); border: 1px solid #ffc04544; }
+.badge-teal { background: #4ecdc422; color: var(--teal); border: 1px solid #4ecdc444; }
+.badge-blue { background: #7b8cde22; color: var(--blue); border: 1px solid #7b8cde44; }
+.badge-purple { background: #b583e022; color: var(--purple); border: 1px solid #b583e044; }
+.badge-dim { background: #55555522; color: var(--dim); border: 1px solid #55555544; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.input { width: 100%; padding: 8px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: var(--font); font-size: 13px; outline: none; }
+.input:focus { border-color: var(--teal); }
+.input-sm { padding: 3px 8px; font-size: 11px; display: inline; width: auto; }
+select.input { cursor: pointer; }
+textarea.input { resize: vertical; line-height: 1.5; }
+.form-grid { display: grid; gap: 10px; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px; width: 94%; max-width: 700px; max-height: 85vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.modal-title { color: var(--teal); font-size: 15px; font-weight: 600; }
+.modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.priority-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.scan-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; margin-bottom: 6px; }
+.scan-running { border-left: 3px solid var(--yellow); }
+.scan-completed { border-left: 3px solid var(--teal); }
+.scan-error { border-left: 3px solid var(--red); }
+.scan-queued { border-left: 3px solid var(--dim); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--bg3); border-top-color: var(--yellow); border-radius: 50%; animation: spin 0.8s linear infinite; }
+.console { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; height: calc(100% - 40px); display: flex; flex-direction: column; }
+.console-output { flex: 1; overflow-y: auto; font-size: 11px; line-height: 1.8; }
+.finding-card { border-left: 3px solid var(--blue); }
+.finding-critical { border-left-color: var(--red); }
+.finding-high { border-left-color: var(--orange); }
+.finding-medium { border-left-color: var(--yellow); }
+.finding-low { border-left-color: var(--teal); }
+.empty { color: var(--dim); text-align: center; padding: 40px; }
+.search-bar { margin-bottom: 10px; }
+.tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+.tool-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; }
+.tool-ok { color: var(--teal); }
+.tool-missing { color: var(--red); opacity: 0.5; }
+.worker-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; margin-bottom: 8px; }
+.worker-active { border-left: 3px solid var(--teal); }
+.worker-stale { border-left: 3px solid var(--red); opacity: 0.6; }
+.worker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
+.info-box { background: var(--bg3); border-radius: 6px; padding: 12px 16px; margin-bottom: 8px; }
+.info-box-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 12px; }
+.info-box-label { color: var(--muted); }
+.info-box-value { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const API = '';
+const SEV_COLORS = { critical: 'red', high: 'orange', medium: 'yellow', low: 'teal', info: 'blue' };
+const STAT_COLORS = { pending: '#555', scanning: '#ffc045', scanned: '#4ecdc4', exploited: '#ff2b5e' };
+const PHASE_NAMES = { 1: 'Discovery', 2: 'Service Enumeration', 3: 'Vulnerability Assessment', 4: 'Credential Attacks' };
+
+let state = { targets: [], findings: [], notes: [], creds: [], scans: [], workers: [], log: [] };
+let ui = { tab: 'targets', selectedTarget: null, search: '', modal: null, profiles: [], toolStatus: {}, pollInterval: null, outputModal: null, workerInfo: null, expandedTools: {} };
+
+async function api(path, opts = {}) {
+  try {
+    const res = await fetch(API + path, { headers: { 'Content-Type': 'application/json' }, ...opts, body: opts.body ? JSON.stringify(opts.body) : undefined });
+    if (res.status === 401) { window.location.href = '/login'; return null; }
+    return await res.json();
+  } catch (e) { console.error('API error:', e); return null; }
+}
+
+async function refreshState() {
+  if (ui.modal || ui.outputModal) return;
+  // Skip render if user is actively typing in an input
+  const ae = document.activeElement;
+  const userIsTyping = ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT');
+  const data = await api('/api/state');
+  if (data) {
+    state = data;
+    if (!userIsTyping) render();
+  }
+}
+
+async function loadProfiles(targetId) { const data = await api(`/api/targets/${targetId}/profiles`); if (data) { ui.profiles = data; render(); } }
+async function checkTools() { const data = await api('/api/tools'); if (data) { ui.toolStatus = data; render(); } }
+async function loadWorkers() { const data = await api('/api/workers'); if (data) { ui.workerInfo = data; render(); } }
+async function startScan(targetId, profileId) { await api('/api/scan', { method: 'POST', body: { targetId, profileId } }); await refreshState(); }
+async function batchScan(targetId, profileIds) { await api('/api/scan/batch', { method: 'POST', body: { targetId, profileIds } }); await refreshState(); }
+async function stopScan(scanId) { await api(`/api/scan/${scanId}/stop`, { method: 'POST' }); await refreshState(); }
+async function viewOutput(scanId) { const data = await api(`/api/scan/${scanId}/output`); if (data) { ui.outputModal = data; render(); } }
+async function addTarget(data) { await api('/api/targets', { method: 'POST', body: data }); ui.modal = null; await refreshState(); }
+async function deleteTarget(id) { await api(`/api/targets/${id}`, { method: 'DELETE' }); ui.selectedTarget = null; await refreshState(); }
+async function updateTarget(id, data) { await api(`/api/targets/${id}`, { method: 'PATCH', body: data }); await refreshState(); }
+async function addCred(data) { await api('/api/creds', { method: 'POST', body: data }); ui.modal = null; await refreshState(); }
+async function addNote(data) { await api('/api/notes', { method: 'POST', body: data }); ui.modal = null; await refreshState(); }
+async function importOutput(text, format) { const data = await api('/api/import', { method: 'POST', body: { text, format } }); if (data) { ui.modal = null; await refreshState(); } return data; }
+async function scanAllTargets(phase) { await api('/api/scan/all', { method: 'POST', body: { phase } }); await refreshState(); }
+async function setWorkerMode(mode) { await api('/api/workers/mode', { method: 'POST', body: { mode } }); await loadWorkers(); }
+async function flushQueue() { await api('/api/workers/queue/flush', { method: 'POST' }); await loadWorkers(); }
+async function purgeData(opts) { if (!confirm('Are you sure? This cannot be undone.')) return; await api('/api/purge', { method: 'POST', body: opts }); ui.selectedTarget = null; await refreshState(); }
+
+function h(tag, attrs, ...children) {
+  const el = document.createElement(tag);
+  if (attrs) Object.entries(attrs).forEach(([k, v]) => {
+    if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'className') el.className = v;
+    else if (k === 'innerHTML') el.innerHTML = v;
+    else el.setAttribute(k, v);
+  });
+  children.flat(Infinity).forEach(c => { if (c == null) return; el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+  return el;
+}
+function badge(color, text) { return h('span', { className: `badge badge-${color}` }, text); }
+function timeAgo(iso) {
+  if (!iso) return '';
+  const d = new Date(iso.endsWith('Z') ? iso : iso + 'Z');
+  const s = Math.floor((Date.now() - d) / 1000);
+  if (s < 0) return 'just now';
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.floor(s/60)}m ago`;
+  if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+  return d.toLocaleTimeString();
+}
+
+function render() {
+  const app = document.getElementById('app');
+  const oldPanel = document.querySelector('.detail-panel');
+  const panelScroll = oldPanel ? oldPanel.scrollTop : 0;
+  const oldMain = document.querySelector('.main');
+  const mainScroll = oldMain ? oldMain.scrollTop : 0;
+  app.innerHTML = '';
+  app.appendChild(renderHeader());
+  app.appendChild(renderTabs());
+  app.appendChild(renderLayout());
+  if (ui.modal) app.appendChild(renderModal());
+  if (ui.outputModal) app.appendChild(renderOutputModal());
+  requestAnimationFrame(() => {
+    const newPanel = document.querySelector('.detail-panel');
+    if (newPanel) newPanel.scrollTop = panelScroll;
+    const newMain = document.querySelector('.main');
+    if (newMain) newMain.scrollTop = mainScroll;
+  });
+}
+
+function renderHeader() {
+  const scanned = state.targets.filter(t => t.status === 'scanned').length;
+  const ports = state.targets.reduce((a, t) => a + (t.openPorts?.length || 0), 0);
+  const running = state.scans.filter(s => s.status === 'running').length;
+  const wc = (state.workers || []).filter(w => w.status === 'active').length;
+  return h('div', { className: 'header' },
+    h('div', { className: 'logo' },
+      h('div', { className: 'logo-dot' }),
+      h('span', { className: 'logo-text' }, 'Reconboard'),
+      h('span', { className: 'logo-ver' }, 'v5 • Distributed'),
+      running > 0 ? h('span', { style: { display: 'flex', alignItems: 'center', gap: '4px' } }, h('span', { className: 'spinner' }), h('span', { style: { fontSize: '11px', color: '#ffc045' } }, `${running} running`)) : null,
+    ),
+    h('div', { className: 'stats' },
+      h('span', {}, 'TGT ', h('b', {}, `${state.targets.length}`)),
+      h('span', {}, 'SCN ', h('b', { style: { color: 'var(--teal)' } }, `${scanned}`)),
+      h('span', {}, 'PRT ', h('b', { style: { color: 'var(--yellow)' } }, `${ports}`)),
+      h('span', {}, 'FND ', h('b', { style: { color: 'var(--orange)' } }, `${state.findings.length}`)),
+      h('span', {}, 'CRD ', h('b', { style: { color: 'var(--red)' } }, `${state.creds.length}`)),
+      wc > 0 ? h('span', {}, 'WRK ', h('b', { style: { color: 'var(--purple)' } }, `${wc}`)) : null,
+    ),
+    h('div', { className: 'header-actions' },
+      h('button', { className: 'btn btn-purple btn-sm', onClick: () => scanAllTargets(2) }, '⚡ Scan All'),
+      h('button', { className: 'btn btn-primary', onClick: () => { ui.modal = 'import'; render(); } }, 'Import'),
+      h('button', { className: 'btn btn-secondary', onClick: () => { ui.modal = 'addTarget'; render(); } }, '+ Target'),
+      h('button', { className: 'btn btn-secondary', onClick: () => { ui.modal = 'addCred'; render(); } }, '+ Cred'),
+      h('button', { className: 'btn btn-secondary', onClick: async () => {
+        const data = await api('/api/export'); const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `recon-${Date.now()}.json`; a.click();
+      }}, 'Export'),
+      h('button', { className: 'btn btn-danger btn-sm', onClick: () => { ui.modal = 'purge'; render(); } }, 'Purge'),
+      h('button', { className: 'btn btn-secondary btn-sm', onClick: () => { window.location.href = '/logout'; } }, 'Logout'),
+    ),
+  );
+}
+
+function renderTabs() {
+  const tabs = [
+    { key: 'targets', label: 'Targets', count: state.targets.length },
+    { key: 'scans', label: 'Scans', count: state.scans.filter(s => s.status === 'running').length || state.scans.length },
+    { key: 'findings', label: 'Findings', count: state.findings.length },
+    { key: 'creds', label: 'Creds', count: state.creds.length },
+    { key: 'notes', label: 'Notes', count: state.notes.length },
+    { key: 'workers', label: 'Workers', count: (state.workers||[]).length },
+    { key: 'tools', label: 'Kali Tools' },
+    { key: 'console', label: 'Console' },
+  ];
+  return h('div', { className: 'tabs' }, ...tabs.map(t => h('button', {
+    className: `tab ${ui.tab === t.key ? 'active' : ''}`,
+    onClick: () => { ui.tab = t.key; if (t.key === 'tools') checkTools(); if (t.key === 'workers') loadWorkers(); render(); },
+  }, t.label, t.count !== undefined ? h('span', { className: 'tab-count' }, `${t.count}`) : null)));
+}
+
+function renderLayout() {
+  const layout = h('div', { className: 'layout' });
+  const main = h('div', { className: 'main' });
+  layout.appendChild(main);
+  if (ui.tab !== 'console' && ui.tab !== 'workers') {
+    const search = h('input', {
+      className: 'input search-bar', placeholder: 'Search targets, IPs, services...', id: 'search-input',
+      value: ui.search, onInput: (e) => { ui.search = e.target.value; render(); requestAnimationFrame(() => { const el = document.getElementById('search-input'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }); },
+    });
+    main.appendChild(search);
+  }
+  if (ui.tab === 'targets') main.appendChild(renderTargets());
+  else if (ui.tab === 'scans') main.appendChild(renderScans());
+  else if (ui.tab === 'findings') main.appendChild(renderFindings());
+  else if (ui.tab === 'creds') main.appendChild(renderCreds());
+  else if (ui.tab === 'notes') main.appendChild(renderNotes());
+  else if (ui.tab === 'workers') main.appendChild(renderWorkers());
+  else if (ui.tab === 'tools') main.appendChild(renderTools());
+  else if (ui.tab === 'console') main.appendChild(renderConsole());
+  if (ui.tab === 'targets' && ui.selectedTarget) layout.appendChild(renderDetailPanel());
+  return layout;
+}
+
+function renderTargets() {
+  const q = ui.search.toLowerCase();
+  const filtered = state.targets.filter(t => !q || t.hostname.toLowerCase().includes(q) || (t.ip || '').includes(q) || t.os.toLowerCase().includes(q) || t.services.some(s => s.toLowerCase().includes(q)));
+  return h('div', {},
+    ...filtered.map(t => {
+      const isSelected = ui.selectedTarget === t.id;
+      return h('div', { className: `card ${isSelected ? 'selected' : ''}`, onClick: () => { ui.selectedTarget = t.id; loadProfiles(t.id); render(); } },
+        h('div', { className: 'card-row' },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            h('span', { className: 'status-dot', style: { background: STAT_COLORS[t.status] } }),
+            h('span', { style: { fontWeight: 600 } }, t.hostname),
+            t.ip ? h('span', { style: { color: 'var(--muted)', fontSize: '11px' } }, t.ip) : null,
+          ),
+          h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } },
+            badge('blue', t.os), ...t.services.map(s => badge('yellow', s)),
+            t.openPorts?.length > 0 ? badge('teal', `${t.openPorts.length} ports`) : null,
+            (() => { const r = state.scans.filter(s => s.targetId === t.id && s.status === 'running').length; return r > 0 ? h('span', { style: { display: 'flex', alignItems: 'center', gap: '4px' } }, h('span', { className: 'spinner' }), h('span', { style: { fontSize: '10px', color: 'var(--yellow)' } }, `${r} running`)) : null; })(),
+          ),
+        ),
+      );
+    }),
+    filtered.length === 0 ? h('div', { className: 'empty' }, 'No targets match your search') : null,
+  );
+}
+
+function renderDetailPanel() {
+  const t = state.targets.find(x => x.id === ui.selectedTarget);
+  if (!t) return h('div');
+  const targetScans = state.scans.filter(s => s.targetId === t.id).slice(-10).reverse();
+  const profiles = ui.profiles || [];
+  const phases = {};
+  profiles.forEach(p => { if (!phases[p.phase]) phases[p.phase] = []; phases[p.phase].push(p); });
+  const panel = h('div', { className: 'detail-panel' });
+  panel.appendChild(h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '12px' } },
+    h('h3', { style: { color: 'var(--teal)', fontSize: '14px' } }, t.hostname),
+    h('div', { style: { display: 'flex', gap: '6px' } },
+      h('button', { className: 'btn btn-danger btn-sm', onClick: () => { if(confirm('Delete target?')) deleteTarget(t.id); } }, '✕'),
+      h('button', { className: 'modal-close', onClick: () => { ui.selectedTarget = null; render(); } }, '←'),
+    ),
+  ));
+  const ipRow = h('div', { style: { marginBottom: '8px', fontSize: '11px' } });
+  ipRow.innerHTML = `<span style="color:var(--muted)">IP:</span> `;
+  ipRow.appendChild(h('input', { className: 'input input-sm', value: t.ip || '', placeholder: 'assign IP', style: { width: '140px' }, onChange: (e) => updateTarget(t.id, { ip: e.target.value }) }));
+  panel.appendChild(ipRow);
+  panel.appendChild(h('div', { style: { fontSize: '11px', lineHeight: '2', color: 'var(--muted)' } },
+    h('div', {}, `OS: ${t.os}`), t.detectedOs ? h('div', {}, `Detected: ${t.detectedOs}`) : null,
+    h('div', {}, 'Status: ', h('span', { style: { color: STAT_COLORS[t.status] } }, t.status)),
+  ));
+  panel.appendChild(h('div', { style: { margin: '6px 0' } }, ...t.services.map(s => badge('yellow', s))));
+  if (t.openPorts?.length > 0) {
+    const pd = h('div', { style: { marginTop: '8px' } }, h('div', { style: { color: 'var(--muted)', fontSize: '11px', marginBottom: '4px' } }, `Open Ports (${t.openPorts.length})`));
+    t.openPorts.forEach(p => { pd.appendChild(h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '10px', padding: '2px 0', borderBottom: '1px solid var(--bg3)' } },
+      h('span', { style: { color: 'var(--teal)' } }, `${p.port}/${p.protocol}`), h('span', { style: { color: 'var(--muted)' } }, p.service),
+      h('span', { style: { color: 'var(--dim)', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, p.version),
+    )); });
+    panel.appendChild(pd);
+  }
+  panel.appendChild(h('div', { style: { marginTop: '10px', display: 'flex', gap: '6px' } },
+    h('button', { className: 'btn btn-secondary btn-sm', onClick: () => { ui.modal = { type: 'addNote', targetId: t.id }; render(); } }, '+ Note'),
+    h('button', { className: 'btn btn-secondary btn-sm', onClick: () => { ui.modal = { type: 'addCred', targetId: t.id }; render(); } }, '+ Cred'),
+  ));
+  if (t.ip && Object.keys(phases).length > 0) {
+    panel.appendChild(h('div', { style: { marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '12px' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+        h('div', { style: { fontWeight: 600, fontSize: '12px', color: 'var(--teal)' } }, 'Scan Profiles'),
+        h('button', { className: 'btn btn-purple btn-sm', onClick: () => batchScan(t.id, profiles.filter(p => p.priority === 'required').map(p => p.id)) }, 'Run All Required'),
+      ),
+    ));
+    Object.entries(phases).sort(([a],[b]) => a-b).forEach(([phase, profs]) => {
+      const phaseDiv = h('div', { style: { marginBottom: '10px' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
+          h('span', { style: { fontSize: '11px', fontWeight: 600, color: 'var(--muted)' } }, `Phase ${phase}: ${PHASE_NAMES[phase] || ''}`),
+          h('button', { className: 'btn btn-run btn-sm', onClick: () => batchScan(t.id, profs.filter(p => p.priority === 'required').map(p => p.id)) }, 'Run Phase'),
+        ),
+      );
+      profs.forEach(p => {
+        const isRunning = state.scans.some(s => s.targetId === t.id && s.profileId === p.id && s.status === 'running');
+        const lastScan = state.scans.filter(s => s.targetId === t.id && s.profileId === p.id).pop();
+        const priColor = { required: 'var(--red)', recommended: 'var(--yellow)', optional: 'var(--dim)' }[p.priority];
+        phaseDiv.appendChild(h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 0', borderBottom: '1px solid var(--bg)', fontSize: '11px' } },
+          h('span', { className: 'priority-dot', style: { background: priColor } }),
+          h('div', { style: { flex: 1, minWidth: 0 } }, h('div', { style: { fontWeight: 500 } }, p.name), h('div', { style: { color: 'var(--dim)', fontSize: '10px' } }, p.desc)),
+          lastScan?.status === 'completed' ? badge('teal', '✓') : null,
+          lastScan?.worker ? h('span', { style: { fontSize: '9px', color: 'var(--purple)' } }, lastScan.worker === 'local' ? '' : '⚡') : null,
+          isRunning
+            ? h('button', { className: 'btn btn-stop btn-sm', onClick: (e) => { e.stopPropagation(); const s = state.scans.find(s => s.targetId === t.id && s.profileId === p.id && s.status === 'running'); if (s) stopScan(s.id); } }, 'Stop')
+            : h('button', { className: 'btn btn-run btn-sm', onClick: (e) => { e.stopPropagation(); startScan(t.id, p.id); } }, 'Run'),
+        ));
+      });
+      panel.appendChild(phaseDiv);
+    });
+  } else if (!t.ip) {
+    panel.appendChild(h('div', { style: { marginTop: '16px', color: 'var(--dim)', fontSize: '11px', textAlign: 'center' } }, 'Assign an IP to see scan profiles'));
+  }
+  if (targetScans.length > 0) {
+    panel.appendChild(h('div', { style: { marginTop: '12px', borderTop: '1px solid var(--border)', paddingTop: '8px' } },
+      h('div', { style: { fontSize: '11px', color: 'var(--muted)', marginBottom: '6px' } }, 'Recent Scans'),
+      ...targetScans.map(s => h('div', { style: { fontSize: '10px', padding: '3px 0', borderBottom: '1px solid var(--bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }, onClick: () => viewOutput(s.id) },
+        h('div', {}, badge(s.status === 'completed' ? 'teal' : s.status === 'running' ? 'yellow' : s.status === 'error' ? 'red' : 'dim', s.status), h('span', {}, s.profileName),
+          s.worker && s.worker !== 'local' ? h('span', { style: { color: 'var(--purple)', marginLeft: '4px', fontSize: '9px' } }, `⚡${s.worker.slice(-6)}`) : null),
+        h('span', { style: { color: 'var(--dim)' } }, timeAgo(s.completedAt || s.startedAt)),
+      )),
+    ));
+  }
+  return panel;
+}
+
+function renderScans() {
+  const scans = [...state.scans].reverse();
+  if (scans.length === 0) return h('div', { className: 'empty' }, 'No scans yet. Select a target and run a scan profile.');
+  return h('div', {}, ...scans.map(s => {
+    const target = state.targets.find(t => t.id === s.targetId);
+    return h('div', { className: `scan-item scan-${s.status}` },
+      h('div', { className: 'card-row' },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+          s.status === 'running' ? h('span', { className: 'spinner' }) : null,
+          h('span', { style: { fontWeight: 600, fontSize: '12px' } }, s.profileName), badge('blue', target?.hostname || s.targetId),
+          s.worker && s.worker !== 'local' ? badge('purple', `⚡ ${s.worker.slice(-8)}`) : null,
+        ),
+        h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+          badge(s.status === 'completed' ? 'teal' : s.status === 'running' ? 'yellow' : s.status === 'error' ? 'red' : 'dim', s.status),
+          h('span', { style: { fontSize: '10px', color: 'var(--dim)' } }, timeAgo(s.completedAt || s.startedAt || s.queuedAt)),
+          s.status === 'running' ? h('button', { className: 'btn btn-stop btn-sm', onClick: () => stopScan(s.id) }, 'Stop') : null,
+          s.output ? h('button', { className: 'btn btn-secondary btn-sm', onClick: () => viewOutput(s.id) }, 'Output') : null,
+        ),
+      ),
+      s.parsedSummary ? h('div', { style: { fontSize: '11px', color: 'var(--muted)', marginTop: '4px' } }, `→ ${s.parsedSummary}`) : null,
+      h('div', { style: { fontSize: '10px', color: 'var(--dim)', marginTop: '2px', wordBreak: 'break-all' } }, s.tool),
+    );
+  }));
+}
+
+function renderFindings() {
+  const counts = {}; state.findings.forEach(f => { counts[f.severity] = (counts[f.severity] || 0) + 1; });
+  const sorted = [...state.findings].sort((a, b) => { const o = { critical: 0, high: 1, medium: 2, low: 3, info: 4 }; return (o[a.severity] ?? 5) - (o[b.severity] ?? 5); });
+  const q = ui.search.toLowerCase();
+  const filtered = sorted.filter(f => !q || f.targetIp?.includes(q) || f.service?.toLowerCase().includes(q) || f.version?.toLowerCase().includes(q));
+  return h('div', {},
+    h('div', { style: { display: 'flex', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' } }, ...Object.entries(SEV_COLORS).map(([sev, col]) => badge(col, `${sev}: ${counts[sev] || 0}`))),
+    ...filtered.map(f => h('div', { className: `card finding-card finding-${f.severity}` },
+      h('div', { className: 'card-row' },
+        h('span', { style: { fontWeight: 600, fontSize: '12px' } }, `${f.targetIp}:${f.port}`, h('span', { style: { color: 'var(--dim)', marginLeft: '6px' } }, f.protocol)),
+        h('div', { style: { display: 'flex', gap: '4px' } }, badge('dim', f.source || 'unknown'), badge(SEV_COLORS[f.severity], f.severity), badge('blue', f.service)),
+      ),
+      f.version ? h('div', { style: { fontSize: '11px', color: 'var(--muted)', marginTop: '4px', wordBreak: 'break-all' } }, f.version) : null,
+    )),
+    filtered.length === 0 ? h('div', { className: 'empty' }, 'Run scans to populate findings') : null,
+  );
+}
+
+function renderCreds() {
+  return h('div', {},
+    h('button', { className: 'btn btn-primary', style: { marginBottom: '12px' }, onClick: () => { ui.modal = 'addCred'; render(); } }, '+ Log Credential'),
+    ...state.creds.map(c => { const target = state.targets.find(t => t.id === c.targetId); return h('div', { className: 'card', style: { borderLeft: '3px solid var(--red)', cursor: 'default' } },
+      h('div', { className: 'card-row' }, h('div', {}, h('span', { style: { color: 'var(--red)', fontWeight: 600 } }, c.username), c.password ? h('span', { style: { color: 'var(--teal)' } }, `:${c.password}`) : null),
+        h('div', { style: { display: 'flex', gap: '4px' } }, badge('yellow', c.service), target ? badge('blue', target.hostname) : null)),
+      c.hash ? h('div', { style: { fontSize: '11px', color: 'var(--muted)', marginTop: '4px', wordBreak: 'break-all' } }, c.hash) : null,
+      c.note ? h('div', { style: { fontSize: '11px', color: 'var(--dim)', marginTop: '2px' } }, c.note) : null,
+    ); }),
+    state.creds.length === 0 ? h('div', { className: 'empty' }, 'No credentials captured yet') : null,
+  );
+}
+
+function renderNotes() {
+  return h('div', {},
+    h('button', { className: 'btn btn-primary', style: { marginBottom: '12px' }, onClick: () => { ui.modal = 'addNote'; render(); } }, '+ Add Note'),
+    ...state.notes.map(n => { const target = state.targets.find(t => t.id === n.targetId); return h('div', { className: `card finding-card finding-${n.severity}`, style: { cursor: 'default' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '4px' } }, h('span', { style: { fontWeight: 600, fontSize: '13px' } }, n.title), h('span', { style: { fontSize: '10px', color: 'var(--dim)' } }, timeAgo(n.timestamp))),
+      h('div', { style: { fontSize: '12px', color: '#b1bac4', whiteSpace: 'pre-wrap' } }, n.content), target ? badge('blue', target.hostname) : null,
+    ); }),
+    state.notes.length === 0 ? h('div', { className: 'empty' }, 'Add notes for intel and observations') : null,
+  );
+}
+
+function renderWorkers() {
+  const info = ui.workerInfo || { workers: [], queue_depth: 0, mode: 'local', redis_connected: false };
+  const container = h('div', {});
+  const sb = h('div', { className: 'info-box' });
+  sb.appendChild(h('div', { className: 'info-box-row' }, h('span', { className: 'info-box-label' }, 'Execution Mode'),
+    h('div', { style: { display: 'flex', gap: '6px' } },
+      h('button', { className: `btn btn-sm ${info.mode === 'local' ? 'btn-primary' : 'btn-secondary'}`, onClick: () => setWorkerMode('local') }, 'Local'),
+      h('button', { className: `btn btn-sm ${info.mode === 'distributed' ? 'btn-purple' : 'btn-secondary'}`, onClick: () => setWorkerMode('distributed') }, 'Distributed'),
+    )));
+  sb.appendChild(h('div', { className: 'info-box-row' }, h('span', { className: 'info-box-label' }, 'Redis Connection'),
+    h('span', { className: 'info-box-value', style: { color: info.redis_connected ? 'var(--teal)' : 'var(--red)' } }, info.redis_connected ? '● Connected' : '● Disconnected')));
+  sb.appendChild(h('div', { className: 'info-box-row' }, h('span', { className: 'info-box-label' }, 'Job Queue Depth'),
+    h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } }, h('span', { className: 'info-box-value' }, `${info.queue_depth}`),
+      info.queue_depth > 0 ? h('button', { className: 'btn btn-danger btn-sm', onClick: () => { if(confirm('Flush all queued jobs?')) flushQueue(); } }, 'Flush') : null)));
+  sb.appendChild(h('div', { className: 'info-box-row' }, h('span', { className: 'info-box-label' }, 'Active Workers'),
+    h('span', { className: 'info-box-value', style: { color: 'var(--purple)' } }, `${info.workers.filter(w => w.status === 'active').length} / ${info.workers.length}`)));
+  container.appendChild(sb);
+  container.appendChild(h('div', { style: { fontSize: '11px', color: 'var(--muted)', marginBottom: '12px', padding: '8px 12px', background: 'var(--bg3)', borderRadius: '6px' } },
+    '💡 Scale workers: ', h('code', { style: { color: 'var(--teal)' } }, 'docker compose up -d --scale worker=N'), ' or use ', h('code', { style: { color: 'var(--teal)' } }, 'make scale N=5')));
+  if (info.workers.length > 0) {
+    const grid = h('div', { className: 'worker-grid' });
+    info.workers.forEach(w => { const isA = w.status === 'active'; grid.appendChild(h('div', { className: `worker-card ${isA ? 'worker-active' : 'worker-stale'}` },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '8px' } },
+        h('span', { style: { fontWeight: 600, fontSize: '12px', color: isA ? 'var(--teal)' : 'var(--red)' } }, `⚡ ${w.worker_id || 'unknown'}`), badge(isA ? 'teal' : 'red', w.status)),
+      h('div', { style: { fontSize: '11px', color: 'var(--muted)', lineHeight: '1.8' } },
+        h('div', {}, `Host: ${w.hostname || '?'}`), h('div', {}, `Concurrency: ${w.concurrency || '?'}`), h('div', {}, `Active scans: ${w.active_scans || 0}`),
+        h('div', {}, `Completed: ${w.scans_completed || 0}`), h('div', {}, `Failed: ${w.scans_failed || 0}`), h('div', {}, `Last seen: ${timeAgo(w.last_heartbeat)}`)),
+    )); });
+    container.appendChild(grid);
+  } else {
+    container.appendChild(h('div', { className: 'empty' }, info.mode === 'distributed' ? 'No workers connected. Start worker containers with: docker compose up -d --scale worker=3' : 'Running in local mode. Switch to distributed mode to use workers.'));
+  }
+  container.appendChild(h('div', { style: { marginTop: '12px', textAlign: 'center' } }, h('button', { className: 'btn btn-secondary btn-sm', onClick: loadWorkers }, '↻ Refresh')));
+  return container;
+}
+
+function renderTools() {
+  const tools = ui.toolStatus; if (!Object.keys(tools).length) return h('div', { className: 'empty' }, 'Loading tool status...');
+  const available = Object.values(tools).filter(Boolean).length; const total = Object.keys(tools).length;
+  const toolInfo = {
+    'nmap': { desc: 'The industry-standard network scanner. Port scanning, service detection, OS fingerprinting, and NSE vuln scripts.', usage: 'Core tool. Used in Phase 1 discovery (quick, full TCP, UDP), Phase 2 service scripts (SMB, FTP, HTTP, Redis, MySQL, SMTP, SSH, VNC, MongoDB vulns), and Phase 3 vuln assessment.' },
+    'masscan': { desc: 'Asynchronous TCP port scanner. Scans the entire internet in under 5 minutes at 10M pps.', usage: 'Phase 1 optional. Ultra-fast full port scan to find open ports quickly, results verified with nmap.' },
+    'naabu': { desc: 'Fast SYN/CONNECT port scanner from ProjectDiscovery. Modern alternative to masscan.', usage: 'Phase 1 optional. Top 1000 port scan for quick discovery.' },
+    'enum4linux': { desc: 'Linux tool for enumerating SMB shares, users, groups, and OS info via RPC/SMB null sessions.', usage: 'Phase 2 required for SMB targets. Full enumeration with -A flag.' },
+    'enum4linux-ng': { desc: 'Next-gen rewrite of enum4linux in Python with JSON output and improved reliability.', usage: 'Preferred over enum4linux when available. Same Phase 2 SMB role.' },
+    'smbclient': { desc: 'Samba client for accessing SMB/CIFS shares. Used for null-auth share listing.', usage: 'Phase 2 required for SMB. Lists available shares with null authentication.' },
+    'smbmap': { desc: 'SMB share enumeration tool that maps access permissions (read/write/no access).', usage: 'Phase 2 required for SMB. Maps share permission levels for access assessment.' },
+    'crackmapexec': { desc: 'Swiss army knife for pentesting Active Directory. SMB, WinRM, LDAP, MSSQL enumeration.', usage: 'Replaced by netexec on modern Kali. Same Phase 2 AD/SMB enumeration role.' },
+    'netexec': { desc: 'Successor to CrackMapExec. Network service enumeration and exploitation framework.', usage: 'Phase 2 required for AD/SMB targets. Null auth enumeration of shares, users, groups.' },
+    'gobuster': { desc: 'Directory/file brute-force scanner written in Go. Fast, supports DNS and vhost modes.', usage: 'Phase 2 required for web targets. Directory brute force with common extensions (php, html, txt, bak).' },
+    'feroxbuster': { desc: 'Recursive content discovery tool in Rust. Faster than gobuster with auto-recursion.', usage: 'Phase 2 fallback if gobuster unavailable. Recursive directory discovery up to depth 3.' },
+    'dirb': { desc: 'Web content scanner that brute forces directories and files on web servers.', usage: 'Not directly integrated. Available for manual use via container shell.' },
+    'nikto': { desc: 'Web server scanner that checks for dangerous files, outdated versions, and misconfigurations.', usage: 'Phase 2 required for web targets. Findings auto-scored by severity and added to findings DB.' },
+    'wpscan': { desc: 'WordPress security scanner. Enumerates plugins, themes, users, and known vulnerabilities.', usage: 'Phase 2 required for WordPress targets. Aggressive plugin detection, user enumeration.' },
+    'whatweb': { desc: 'Web technology fingerprinter. Identifies CMS, frameworks, JS libraries, server software.', usage: 'Phase 2 required for web targets. Technology stack identification.' },
+    'curl': { desc: 'Command-line HTTP client. Used for header grabbing, file checks, and API probing.', usage: 'Phase 2 required. HTTP headers, robots.txt, sensitive file checks (.env, .git, config backups), WordPress REST API and XML-RPC probing.' },
+    'dig': { desc: 'DNS lookup utility. Used for zone transfers and DNS record enumeration.', usage: 'Phase 2 required for DNS targets. AXFR zone transfer attempts.' },
+    'dnsrecon': { desc: 'DNS enumeration tool with zone transfer, brute force, and cache snooping capabilities.', usage: 'Phase 2 recommended for DNS targets. Standard and brute force enumeration.' },
+    'dnsenum': { desc: 'DNS enumeration tool focused on subdomain brute forcing and zone transfer attempts.', usage: 'Phase 2 optional for DNS targets. Brute force subdomain discovery.' },
+    'hydra': { desc: 'Fast network logon cracker supporting 50+ protocols including SSH, FTP, HTTP, SMB, MySQL.', usage: 'Phase 4 recommended. Brute force attacks against SSH, FTP, MySQL, PostgreSQL with common credential lists.' },
+    'medusa': { desc: 'Speedy, parallel network authentication brute-forcer. Alternative to Hydra.', usage: 'Phase 4 optional. SSH brute force as alternative to Hydra.' },
+    'redis-cli': { desc: 'Redis command-line client. Connects to Redis instances for enumeration and exploitation.', usage: 'Phase 2 required for Redis targets. INFO dump, key scanning, CONFIG enumeration.' },
+    'rpcclient': { desc: 'Windows RPC client for enumerating users, groups, and domain info via null sessions.', usage: 'Phase 2 required for AD targets. enumdomusers, enumdomgroups, getdompwinfo.' },
+    'ldapsearch': { desc: 'LDAP query tool. Tests anonymous bind and enumerates directory information.', usage: 'Phase 2 required for AD targets. Anonymous bind testing and naming context enumeration.' },
+    'impacket-GetNPUsers': { desc: 'Impacket tool for AS-REP roasting. Finds accounts without Kerberos pre-authentication.', usage: 'Phase 2 recommended for AD targets. AS-REP roasting with username wordlist.' },
+    'impacket-GetUserSPNs': { desc: 'Impacket tool for Kerberoasting. Requests service tickets for offline cracking.', usage: 'Not directly integrated. Available for manual Kerberoasting via container shell.' },
+    'impacket-smbclient': { desc: 'Impacket SMB client with pass-the-hash support and advanced authentication options.', usage: 'Not directly integrated. Available for manual SMB access with credential reuse.' },
+    'impacket-secretsdump': { desc: 'Impacket tool for dumping SAM, LSA secrets, and NTDS.dit from Windows machines.', usage: 'Not directly integrated. Available for post-exploitation credential extraction.' },
+    'searchsploit': { desc: 'Command-line interface to Exploit-DB. Searches for public exploits and shellcodes offline.', usage: 'Phase 2 required for FTP (VSFTPD). Checks ExploitDB for known vulnerabilities.' },
+    'netcat': { desc: 'TCP/UDP networking utility. Banner grabbing, port scanning, file transfer, reverse shells.', usage: 'Not directly integrated. Available for manual banner grabbing and connectivity testing.' },
+    'snmpwalk': { desc: 'SNMP query tool. Walks the MIB tree to enumerate system information, interfaces, processes.', usage: 'Phase 2 required for SNMP (port 161). Community string "public" enumeration.' },
+    'nuclei': { desc: 'Template-based vulnerability scanner from ProjectDiscovery. 8000+ community templates covering CVEs, misconfigs, exposures.', usage: 'Phase 3 required. Full vuln scan with severity filtering, plus CVE-specific tag-based scanning. Results parsed as JSON and added to findings.' },
+    'httpx': { desc: 'Fast HTTP toolkit from ProjectDiscovery. Probes URLs for status, title, tech stack, redirects.', usage: 'Phase 2 recommended for web targets. Technology detection and status probing.' },
+    'subfinder': { desc: 'Passive subdomain enumeration tool. Uses multiple data sources (crt.sh, Shodan, VirusTotal, etc).', usage: 'Not directly integrated in scan profiles. Available for manual subdomain recon.' },
+    'amass': { desc: 'OWASP project for subdomain enumeration, DNS mapping, and external asset discovery.', usage: 'Not directly integrated. Available for manual OSINT and subdomain mapping.' },
+    'testssl.sh': { desc: 'SSL/TLS testing tool. Checks ciphers, protocols, vulnerabilities (Heartbleed, POODLE, ROBOT, etc).', usage: 'Phase 2 recommended for HTTPS targets. Full TLS vulnerability assessment.' },
+    'testssl': { desc: 'Same as testssl.sh (Kali installs it as /usr/bin/testssl).', usage: 'Alias for testssl.sh. Symlinked at container startup.' },
+    'sqlmap': { desc: 'Automatic SQL injection detection and exploitation tool. Supports all major DBMS.', usage: 'Not directly integrated. Available for manual SQLi testing via container shell.' },
+    'hashcat': { desc: 'Advanced GPU-accelerated password recovery tool. Supports 300+ hash types.', usage: 'Not directly integrated. Available for offline hash cracking.' },
+    'john': { desc: 'John the Ripper password cracker. CPU-based cracking with extensive format support.', usage: 'Not directly integrated. Available for offline password cracking.' },
+    'onesixtyone': { desc: 'Fast SNMP community string brute-forcer. Scans multiple hosts simultaneously.', usage: 'Phase 2 recommended for SNMP targets. Community string brute force.' },
+    'smtp-user-enum': { desc: 'SMTP user enumeration via VRFY, EXPN, and RCPT TO commands.', usage: 'Phase 2 recommended for SMTP targets (port 25/587). Username enumeration.' },
+    'sslscan': { desc: 'SSL/TLS scanner that checks supported ciphers, certificate details, and protocol versions.', usage: 'Not directly integrated. Available for manual TLS inspection.' },
+    'sslyze': { desc: 'Python-based SSL/TLS scanner with JSON output. Tests for known vulnerabilities.', usage: 'Not directly integrated. Available for manual TLS analysis.' },
+    'responder': { desc: 'LLMNR/NBT-NS/MDNS poisoner for capturing NTLMv1/v2 hashes on the local network.', usage: 'Not directly integrated. Available for manual MITM credential capture.' },
+    'evil-winrm': { desc: 'WinRM shell for pentesting. Supports pass-the-hash, file upload/download, and PS scripting.', usage: 'Not directly integrated. Available for post-exploitation Windows access.' },
+    'bloodhound': { desc: 'Active Directory attack path visualization tool. Maps privilege escalation routes.', usage: 'Not directly integrated. Available for AD attack path analysis.' },
+    'certipy-ad': { desc: 'Active Directory Certificate Services (AD CS) enumeration and abuse tool.', usage: 'Not directly integrated. Available for AD CS vulnerability assessment.' },
+    'wafw00f': { desc: 'Web Application Firewall detection tool. Identifies WAF vendors and bypass opportunities.', usage: 'Not directly integrated. Available for manual WAF fingerprinting.' },
+    'fping': { desc: 'Fast ping sweep tool. Pings multiple hosts in parallel for network discovery.', usage: 'Not directly integrated. Available for manual host discovery.' },
+    'nbtscan': { desc: 'NetBIOS name scanner. Discovers Windows hosts and their NetBIOS names/MACs.', usage: 'Not directly integrated. Available for manual Windows host discovery.' },
+  };
+  const container = h('div', {});
+  container.appendChild(h('div', { style: { marginBottom: '12px', color: 'var(--muted)', fontSize: '12px' } }, `${available}/${total} tools available. `, badge('teal', `${available} installed`), badge('red', `${total - available} missing`)));
+  const grid = h('div', { className: 'tool-grid' });
+  Object.entries(tools).sort(([,a],[,b]) => b - a).forEach(([name, ok]) => {
+    const info = toolInfo[name] || { desc: 'No description available.', usage: 'Not integrated in scan profiles.' };
+    const isIntegrated = info.usage && !info.usage.startsWith('Not directly');
+    const card = h('div', { className: `tool-item ${ok ? 'tool-ok' : 'tool-missing'}`, style: { cursor: 'pointer', flexDirection: 'column', alignItems: 'stretch' },
+      onClick: () => {
+        ui.expandedTools[name] = !ui.expandedTools[name];
+        render();
+      }
+    },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' } },
+        h('span', { style: { fontWeight: 500 } }, name),
+        h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+          isIntegrated ? h('span', { style: { fontSize: '9px', color: 'var(--purple)', border: '1px solid #b583e044', borderRadius: '3px', padding: '1px 4px' } }, 'integrated') : null,
+          h('span', {}, ok ? '✓' : '✗'),
+        ),
+      ),
+      h('div', { className: 'tool-detail', style: { display: ui.expandedTools[name] ? 'block' : 'none', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border)', fontSize: '11px', lineHeight: '1.6' } },
+        h('div', { style: { color: 'var(--text)', marginBottom: '6px' } }, info.desc),
+        h('div', { style: { color: isIntegrated ? 'var(--purple)' : 'var(--dim)' } }, `⚙ ${info.usage}`),
+      ),
+    );
+    grid.appendChild(card);
+  });
+  container.appendChild(grid);
+  return container;
+}
+
+function renderConsole() {
+  const log = state.log?.slice(-100) || [];
+  const tc = { error: 'var(--red)', success: 'var(--teal)', cmd: 'var(--yellow)', system: 'var(--blue)', info: 'var(--muted)' };
+  const container = h('div', { className: 'console' });
+  const output = h('div', { className: 'console-output' });
+  log.forEach(l => { output.appendChild(h('div', { style: { color: tc[l.type] || 'var(--muted)' } }, h('span', { style: { color: '#333', marginRight: '8px' } }, `[${new Date(l.time).toLocaleTimeString()}]`), l.msg)); });
+  container.appendChild(output);
+  setTimeout(() => { output.scrollTop = output.scrollHeight; }, 50);
+  return container;
+}
+
+function renderModal() {
+  const modalType = typeof ui.modal === 'object' ? ui.modal.type : ui.modal;
+  const overlay = h('div', { className: 'modal-overlay', onClick: () => { ui.modal = null; render(); } });
+  const modal = h('div', { className: 'modal', onClick: (e) => e.stopPropagation() });
+  overlay.appendChild(modal);
+
+  if (modalType === 'import') {
+    modal.appendChild(h('div', { className: 'modal-header' }, h('span', { className: 'modal-title' }, 'Import Tool Output'), h('button', { className: 'modal-close', onClick: () => { ui.modal = null; render(); } }, '✕')));
+    modal.appendChild(h('p', { style: { fontSize: '12px', color: 'var(--muted)', marginBottom: '12px' } }, 'Paste raw output from any Kali tool. Auto-detects: nmap, enum4linux, gobuster, nikto, wpscan, redis-cli, nuclei, testssl, snmpwalk.'));
+    modal.appendChild(h('textarea', { className: 'input', rows: 16, placeholder: 'Paste tool output here...', id: 'import-text' }));
+    modal.appendChild(h('div', { className: 'modal-footer' },
+      h('button', { className: 'btn btn-secondary', onClick: () => { ui.modal = null; render(); } }, 'Cancel'),
+      h('button', { className: 'btn btn-primary', onClick: async () => { const text = document.getElementById('import-text').value; if (text.trim()) await importOutput(text, 'auto'); } }, 'Import & Parse')));
+
+  } else if (modalType === 'addTarget') {
+    modal.appendChild(h('div', { className: 'modal-header' }, h('span', { className: 'modal-title' }, 'Add Target'), h('button', { className: 'modal-close', onClick: () => { ui.modal = null; render(); } }, '✕')));
+    modal.appendChild(h('div', { className: 'form-grid' },
+      h('input', { className: 'input', placeholder: 'Hostname', id: 'at-hostname' }), h('input', { className: 'input', placeholder: 'IP Address', id: 'at-ip' }),
+      h('input', { className: 'input', placeholder: 'Operating System', id: 'at-os' }), h('input', { className: 'input', placeholder: 'Services (comma separated)', id: 'at-services' })));
+    modal.appendChild(h('div', { className: 'modal-footer' },
+      h('button', { className: 'btn btn-secondary', onClick: () => { ui.modal = null; render(); } }, 'Cancel'),
+      h('button', { className: 'btn btn-primary', onClick: () => { addTarget({ hostname: document.getElementById('at-hostname').value, ip: document.getElementById('at-ip').value, os: document.getElementById('at-os').value || 'Unknown', services: document.getElementById('at-services').value.split(',').map(s => s.trim()).filter(Boolean) }); } }, 'Add')));
+
+  } else if (modalType === 'addCred') {
+    const targetId = typeof ui.modal === 'object' ? ui.modal.targetId : '';
+    modal.appendChild(h('div', { className: 'modal-header' }, h('span', { className: 'modal-title' }, 'Log Credential'), h('button', { className: 'modal-close', onClick: () => { ui.modal = null; render(); } }, '✕')));
+    const sel = h('select', { className: 'input', id: 'ac-target' }, h('option', { value: '' }, 'No target'));
+    state.targets.forEach(t => { const opt = h('option', { value: t.id }, t.hostname); if (t.id === targetId) opt.selected = true; sel.appendChild(opt); });
+    modal.appendChild(h('div', { className: 'form-grid' }, sel,
+      h('input', { className: 'input', placeholder: 'Username', id: 'ac-user' }), h('input', { className: 'input', placeholder: 'Password', id: 'ac-pass' }),
+      h('input', { className: 'input', placeholder: 'Hash (NTLM, etc.)', id: 'ac-hash' }), h('input', { className: 'input', placeholder: 'Service (SSH, SMB, etc.)', id: 'ac-svc' }),
+      h('input', { className: 'input', placeholder: 'Notes', id: 'ac-note' })));
+    modal.appendChild(h('div', { className: 'modal-footer' },
+      h('button', { className: 'btn btn-secondary', onClick: () => { ui.modal = null; render(); } }, 'Cancel'),
+      h('button', { className: 'btn btn-primary', onClick: () => addCred({ targetId: document.getElementById('ac-target').value, username: document.getElementById('ac-user').value, password: document.getElementById('ac-pass').value, hash: document.getElementById('ac-hash').value, service: document.getElementById('ac-svc').value, note: document.getElementById('ac-note').value }) }, 'Save')));
+
+  } else if (modalType === 'addNote') {
+    const targetId = typeof ui.modal === 'object' ? ui.modal.targetId : '';
+    modal.appendChild(h('div', { className: 'modal-header' }, h('span', { className: 'modal-title' }, 'Add Note'), h('button', { className: 'modal-close', onClick: () => { ui.modal = null; render(); } }, '✕')));
+    const sel = h('select', { className: 'input', id: 'an-target' }, h('option', { value: '' }, 'General'));
+    state.targets.forEach(t => { const opt = h('option', { value: t.id }, t.hostname); if (t.id === targetId) opt.selected = true; sel.appendChild(opt); });
+    const sevSel = h('select', { className: 'input', id: 'an-sev' });
+    ['critical','high','medium','low','info'].forEach(s => sevSel.appendChild(h('option', { value: s, selected: s === 'info' }, s)));
+    modal.appendChild(h('div', { className: 'form-grid' }, sel,
+      h('input', { className: 'input', placeholder: 'Title', id: 'an-title' }), h('textarea', { className: 'input', rows: 5, placeholder: 'Details...', id: 'an-content' }), sevSel));
+    modal.appendChild(h('div', { className: 'modal-footer' },
+      h('button', { className: 'btn btn-secondary', onClick: () => { ui.modal = null; render(); } }, 'Cancel'),
+      h('button', { className: 'btn btn-primary', onClick: () => addNote({ targetId: document.getElementById('an-target').value, title: document.getElementById('an-title').value, content: document.getElementById('an-content').value, severity: document.getElementById('an-sev').value }) }, 'Save')));
+
+  } else if (modalType === 'purge') {
+    modal.appendChild(h('div', { className: 'modal-header' }, h('span', { className: 'modal-title' }, '⚠ Purge Data'), h('button', { className: 'modal-close', onClick: () => { ui.modal = null; render(); } }, '✕')));
+    modal.appendChild(h('p', { style: { fontSize: '12px', color: 'var(--muted)', marginBottom: '16px' } }, 'Select what to purge. This cannot be undone.'));
+    const checks = [
+      { key: 'targets', label: 'Targets', count: state.targets.length },
+      { key: 'findings', label: 'Findings', count: state.findings.length },
+      { key: 'scans', label: 'Scans & Output Files', count: state.scans.length },
+      { key: 'creds', label: 'Credentials', count: state.creds.length },
+      { key: 'notes', label: 'Notes', count: state.notes.length },
+    ];
+    const selected = {};
+    const checkContainer = h('div', { style: { display: 'grid', gap: '8px' } });
+    checks.forEach(c => {
+      selected[c.key] = false;
+      checkContainer.appendChild(h('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer', padding: '6px 10px', background: 'var(--bg2)', borderRadius: '4px', border: '1px solid var(--border)' } },
+        h('input', { type: 'checkbox', onChange: (e) => { selected[c.key] = e.target.checked; } }),
+        h('span', {}, `${c.label} `), badge('dim', `${c.count}`)));
+    });
+    modal.appendChild(checkContainer);
+    modal.appendChild(h('div', { className: 'modal-footer' },
+      h('button', { className: 'btn btn-secondary', onClick: () => { ui.modal = null; render(); } }, 'Cancel'),
+      h('button', { className: 'btn btn-danger', onClick: () => { ui.modal = null; purgeData(selected); } }, 'Purge Selected'),
+      h('button', { className: 'btn btn-danger', style: { background: '#ff2b5e44' }, onClick: () => { ui.modal = null; purgeData({ all: true }); } }, 'Purge Everything')));
+  }
+
+  return overlay;
+}
+
+function renderOutputModal() {
+  const overlay = h('div', { className: 'modal-overlay', onClick: () => { ui.outputModal = null; render(); } });
+  const modal = h('div', { className: 'modal', style: { maxWidth: '900px' }, onClick: (e) => e.stopPropagation() });
+  modal.appendChild(h('div', { className: 'modal-header' }, h('span', { className: 'modal-title' }, 'Scan Output'),
+    h('div', { style: { display: 'flex', gap: '8px' } },
+      h('button', { className: 'btn btn-secondary btn-sm', onClick: () => { navigator.clipboard?.writeText(ui.outputModal.output || ''); } }, 'Copy'),
+      h('button', { className: 'modal-close', onClick: () => { ui.outputModal = null; render(); } }, '✕'))));
+  modal.appendChild(h('pre', { style: { background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '12px', fontSize: '11px', color: '#b1bac4', overflow: 'auto', maxHeight: '60vh', whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, ui.outputModal?.output || 'No output'));
+  overlay.appendChild(modal);
+  return overlay;
+}
+
+function startPolling() { refreshState(); ui.pollInterval = setInterval(refreshState, 3000); }
+startPolling();
+</script>
+</body>
+</html>
