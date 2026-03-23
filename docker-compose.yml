@@ -44,9 +44,7 @@ services:
 
   # ─── Main Server: Web UI + API + Orchestrator ───
   redrecon:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/probot639/reconboard:latest
     container_name: reconboard
     restart: unless-stopped
     depends_on:
@@ -86,9 +84,7 @@ services:
   # ─── Worker: Scalable Scan Execution Nodes ───
   # Scale with: docker compose up -d --scale worker=N
   worker:
-    build:
-      context: .
-      dockerfile: Dockerfile.worker
+    image: ghcr.io/probot639/reconboard-worker:latest
     restart: unless-stopped
     depends_on:
       redis:

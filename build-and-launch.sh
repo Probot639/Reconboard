@@ -18,8 +18,8 @@ while true; do
 done
 
 echo ""
-echo "  Building images..."
-docker compose build --no-cache
+echo "  Pulling latest images..."
+docker compose pull
 
 echo ""
 echo "  Launching with $workers worker(s)..."

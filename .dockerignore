@@ -1,0 +1,12 @@
+.git
+.gitignore
+data/
+exports/
+*.tar.gz
+*.zip
+__pycache__
+*.pyc
+.env
+README.md
+setup.sh
+LICENSE
